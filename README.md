@@ -82,41 +82,60 @@ These are the four stable showcase scenarios used in development and demo prep.
 
 - Target URL: `https://wikipedia.org`
 - User story: `As a user, I want to search the site so that I can find information quickly`
-- Acceptance criteria:
-  - A search input field is visible on the homepage
-  - A user can type a query into the search input
-  - A user can submit the search using Enter or the search action
-  - Relevant search results are displayed after submission
+
+Acceptance criteria:
+
+- A search input field is visible on the homepage
+- A user can type a query into the search input
+- A user can submit the search using Enter or the search action
+- Relevant search results are displayed after submission
 
 ### 2. Python homepage
 
 - Target URL: `https://www.python.org`
 - User story: `As a user, I want to navigate to the homepage so that I can see the main content`
-- Acceptance criteria:
-  - The homepage loads successfully
-  - The Python logo or site branding is visible
-  - Primary navigation links are visible
-  - The main page content is displayed
+
+Acceptance criteria:
+
+- The homepage loads successfully
+- The Python logo or site branding is visible
+- Primary navigation links are visible
+- The main page content is displayed
 
 ### 3. ExpandTesting form validation
 
 - Target URL: `https://practice.expandtesting.com/form-validation`
 - User story: `As a user, I want to see error messages so that I understand what went wrong`
-- Acceptance criteria:
-  - Required form fields are visible
-  - Submitting the form with empty required fields shows validation feedback
-  - Validation feedback remains visible after submission
-  - A user can identify which fields still need correction
+
+Acceptance criteria:
+
+- Required form fields are visible
+- Submitting the form with empty required fields shows validation feedback
+- Validation feedback remains visible after submission
+- A user can identify which fields still need correction
 
 ### 4. The Internet navigation
 
 - Target URL: `https://the-internet.herokuapp.com`
 - User story: `As a user, I want to click on links so that I can navigate between pages`
-- Acceptance criteria:
-  - A list of visible links is displayed on the homepage
-  - A user can click a visible link
-  - Clicking a link navigates to a different page
-  - The destination page displays a visible heading or main content
+
+Acceptance criteria:
+
+- A list of visible links is displayed on the homepage
+- A user can click a visible link
+- Clicking a link navigates to a different page
+- The destination page displays a visible heading or main content
+
+## Suggested screenshots
+
+If you want to make the repository feel more complete, these are the best screenshots to add:
+
+1. The main app screen with the Azure DevOps import area, action buttons, and top branding visible
+2. A generated Playwright spec shown in the `Playwright Spec` tab
+3. A passing `Execution Results` view with totals, summary, and per-test results visible
+4. The `Run History` tab with at least a few saved runs and filters visible
+
+If you add screenshots later, create a folder like `docs/screenshots/` and reference them from this README.
 
 ## Project structure
 

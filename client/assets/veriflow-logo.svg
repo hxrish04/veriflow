@@ -1,0 +1,22 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="256" height="256" rx="64" fill="#0B0F17"/>
+  <rect x="20" y="20" width="216" height="216" rx="52" fill="url(#panel)"/>
+  <rect x="20" y="20" width="216" height="216" rx="52" stroke="#2A3441" stroke-width="2"/>
+  <path d="M68 76L101 180H126L93 76H68Z" fill="#E5E7EB"/>
+  <path d="M102 180L136 76H160L126 180H102Z" fill="url(#violet)"/>
+  <path d="M138 124H183V145H138V124Z" fill="#818CF8"/>
+  <path d="M153 188L142 177L154 165L166 177L191 152L203 164L166 201L153 188Z" fill="#22C55E"/>
+  <circle cx="184" cy="76" r="14" fill="#6366F1"/>
+  <path d="M184 68V84" stroke="#E5E7EB" stroke-width="4" stroke-linecap="round"/>
+  <path d="M176 76H192" stroke="#E5E7EB" stroke-width="4" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="panel" x1="34" y1="28" x2="224" y2="228" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#111827"/>
+      <stop offset="1" stop-color="#182132"/>
+    </linearGradient>
+    <linearGradient id="violet" x1="96" y1="84" x2="169" y2="181" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+</svg>

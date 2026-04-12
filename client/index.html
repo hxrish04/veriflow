@@ -1,0 +1,1508 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VeriFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0b0f17;
+      --bg-secondary: #111827;
+      --bg-tertiary: #1f2937;
+      --card-bg: #111827;
+      --card-hover: #1a2332;
+      --border-color: #1f2937;
+      --text-primary: #e5e7eb;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --accent-primary: #6366f1;
+      --accent-hover: #818cf8;
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --gradient-primary: linear-gradient(135deg, #6366f1, #8b5cf6);
+      --gradient-subtle: linear-gradient(180deg, rgba(99, 102, 241, 0.08), transparent);
+      --radius: 12px;
+      --transition: 0.2s ease;
+      --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.28);
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
+      --mono: 'IBM Plex Mono', monospace;
+      --display: 'Syne', sans-serif;
+      --body: 'Inter', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background:
+        radial-gradient(circle at top, rgba(99, 102, 241, 0.08), transparent 60%),
+        var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -40%;
+      left: -20%;
+      width: 80%;
+      height: 80%;
+      background: radial-gradient(ellipse, rgba(99, 102, 241, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -30%;
+      right: -10%;
+      width: 60%;
+      height: 60%;
+      background: radial-gradient(ellipse, rgba(99, 102, 241, 0.04) 0%, transparent 72%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .layout {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+    }
+
+    header {
+      grid-column: 1 / -1;
+      padding: 20px 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(11, 15, 23, 0.88);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo-mark {
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 12px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.02);
+      flex-shrink: 0;
+    }
+
+    .logo-mark img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .logo-text {
+      font-family: var(--display);
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-text span { color: var(--accent-hover); }
+
+    .brand-block {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .logo-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .header-meta {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .header-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .header-tag.primary {
+      color: var(--text-primary);
+      border-color: rgba(99, 102, 241, 0.28);
+      background: rgba(99, 102, 241, 0.08);
+    }
+
+    .schedule-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-card);
+      backdrop-filter: blur(8px);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: var(--transition);
+    }
+
+    .schedule-meta {
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    .input-panel {
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(11, 15, 23, 0.42);
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      overflow-y: auto;
+      max-height: calc(100vh - 77px);
+    }
+
+    .panel-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--accent-hover);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-group label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      font-family: var(--mono);
+    }
+
+    input, textarea, select {
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: var(--body);
+      font-size: 14px;
+      padding: 10px 14px;
+      width: 100%;
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+      resize: vertical;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: var(--text-muted);
+      opacity: 0.6;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--body);
+      transition: var(--transition);
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: var(--gradient-primary);
+      color: white;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      border-color: var(--accent-primary);
+      color: var(--accent-hover);
+      background: rgba(99, 102, 241, 0.04);
+      transform: translateY(-1px);
+    }
+
+    .btn-next {
+      background: var(--gradient-primary);
+      color: white;
+      border: none;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+    }
+
+    .btn-next:hover:not(:disabled) {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    .btn-next::after {
+      content: 'Next';
+      position: absolute;
+      top: -10px;
+      right: 10px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: white;
+      background: rgba(99, 102, 241, 0.95);
+      border: 1px solid rgba(129, 140, 248, 0.45);
+      border-radius: 999px;
+      padding: 2px 8px;
+      box-shadow: 0 8px 18px rgba(99, 102, 241, 0.22);
+    }
+
+    .btn-attention {
+      animation: next-pulse 1.8s ease-in-out infinite;
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-row { display: flex; flex-direction: column; gap: 10px; }
+
+    .output-panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      max-height: calc(100vh - 77px);
+    }
+
+    .output-tabs {
+      display: flex;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 0 24px;
+      gap: 0;
+      flex-shrink: 0;
+    }
+
+    .tab {
+      padding: 14px 18px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: var(--transition);
+      user-select: none;
+    }
+
+    .tab:hover { color: var(--text-primary); }
+
+    .tab.active {
+      color: var(--text-primary);
+      border-bottom-color: var(--accent-primary);
+      background: var(--gradient-subtle);
+    }
+
+    .tab-content {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .tab-pane {
+      display: none;
+      height: 100%;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    .tab-pane.active { display: block; }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 12px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    .empty-icon { font-size: 40px; opacity: 0.4; }
+
+    .empty-state p {
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .plan-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-card);
+      backdrop-filter: blur(8px);
+      transition: var(--transition);
+    }
+
+    .plan-card h3 {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-hover);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+    }
+
+    .plan-card p {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-primary);
+    }
+
+    .test-case {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-card);
+      transition: var(--transition);
+      backdrop-filter: blur(8px);
+    }
+
+    .test-case:hover {
+      background: var(--card-hover);
+      border-color: #2a3441;
+    }
+
+    .test-case-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .tc-id {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: rgba(99, 102, 241, 0.14);
+      color: var(--accent-hover);
+      padding: 2px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    .tc-name {
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .tc-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+
+    .tc-steps {
+      list-style: none;
+      padding: 0;
+    }
+
+    .tc-steps li {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-secondary);
+      padding: 3px 0 3px 16px;
+      position: relative;
+    }
+
+    .tc-steps li::before {
+      content: '->';
+      position: absolute;
+      left: 0;
+      color: var(--accent-hover);
+      opacity: 0.7;
+    }
+
+    pre.code-block {
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 20px;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.65;
+      overflow-x: auto;
+      white-space: pre;
+      color: #c9d1d9;
+      box-shadow: var(--shadow-card);
+    }
+
+    .result-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      font-weight: 500;
+    }
+
+    .result-banner.pass {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.22);
+      color: var(--success);
+    }
+
+    .result-banner.fail {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.22);
+      color: var(--error);
+    }
+
+    pre.run-output {
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 18px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      color: #aeb6c8;
+      box-shadow: var(--shadow-card);
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .history-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: start;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .history-item:first-child {
+      padding-top: 0;
+    }
+
+    .history-item:last-child {
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .history-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .history-badge {
+      border-radius: 999px;
+      padding: 3px 8px;
+      border: 1px solid var(--border-color);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .history-badge.pass {
+      color: var(--success);
+      border-color: rgba(34, 197, 94, 0.22);
+      background: rgba(34, 197, 94, 0.08);
+    }
+
+    .history-badge.fail {
+      color: var(--error);
+      border-color: rgba(239, 68, 68, 0.22);
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .history-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .history-summary {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    .history-stats {
+      text-align: right;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .result-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .result-actions .btn {
+      width: auto;
+      min-width: 150px;
+    }
+
+    .meta-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .meta-chip {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 999px;
+      padding: 6px 10px;
+    }
+
+    .meta-chip strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .history-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .filter-pill {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-color);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .filter-pill:hover {
+      border-color: var(--accent-primary);
+      color: var(--text-primary);
+    }
+
+    .filter-pill.active {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.3);
+      color: var(--text-primary);
+    }
+
+    .loading-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      background: var(--gradient-primary);
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.28);
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    @keyframes next-pulse {
+      0%, 100% {
+        box-shadow: var(--shadow-soft);
+      }
+      50% {
+        box-shadow: 0 12px 34px rgba(99, 102, 241, 0.34);
+      }
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .status-dot.generating {
+      background: var(--accent-primary);
+      animation: pulse-dot 1s infinite;
+      box-shadow: 0 0 8px rgba(99, 102, 241, 0.28);
+    }
+
+    .status-dot.running {
+      background: var(--success);
+      animation: pulse-dot 0.7s infinite;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.24);
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .input-panel {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        max-height: none;
+      }
+
+      .output-panel {
+        max-height: none;
+      }
+
+      .results-grid,
+      .history-item {
+        grid-template-columns: 1fr;
+      }
+
+      .history-stats {
+        text-align: left;
+        white-space: normal;
+      }
+
+      .header-meta {
+        margin-left: 0;
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loadingBar" class="loading-bar" style="width:0"></div>
+
+  <div class="layout">
+    <header>
+      <div class="logo-mark">
+        <img src="./assets/veriflow-logo.svg" alt="VeriFlow logo" />
+      </div>
+      <div class="brand-block">
+        <div class="logo-text">Veri<span>Flow</span></div>
+        <div class="logo-subtitle">QA automation copilot for Azure DevOps stories</div>
+      </div>
+      <div class="header-meta">
+        <div class="header-tag primary">QA Automation Copilot</div>
+        <div class="header-tag">Demo Build</div>
+        <div class="header-tag" id="headerStatus">Updated just now</div>
+      </div>
+    </header>
+
+    <aside class="input-panel">
+      <div class="panel-label">Test Input</div>
+
+      <div class="field-group">
+        <label for="azureStories">Import from Azure DevOps</label>
+        <button class="btn btn-secondary" onclick="loadAzureStories()">Import Work Items</button>
+        <select id="azureStories" onchange="fillStoryFromAzure()">
+          <option value="">-- Select a work item --</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label for="url">Target URL</label>
+        <input id="url" type="url" placeholder="https://example.com" />
+      </div>
+
+      <div class="field-group">
+        <label for="story">Product Requirement</label>
+        <textarea id="story" rows="5" placeholder="As a [user], I want to [action] so that [benefit]..."></textarea>
+      </div>
+
+      <div class="field-group">
+        <label for="criteria">Acceptance Criteria</label>
+        <textarea id="criteria" rows="7" placeholder="- Given ... When ... Then ...&#10;- The user should see ...&#10;- Clicking X should navigate to ..."></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="generateBtn" onclick="generateTests()">
+          Generate Tests
+        </button>
+        <button class="btn btn-secondary" id="runBtn" onclick="runTests()" disabled>
+          Run Tests
+        </button>
+      </div>
+
+      <div class="schedule-box">
+        <div class="panel-label" style="margin-bottom:0">Scheduled Runs</div>
+        <label for="scheduleInterval">Execution Interval</label>
+        <select id="scheduleInterval">
+          <option value="off">Off</option>
+          <option value="5m">Every 5 minutes</option>
+          <option value="30m">Every 30 minutes</option>
+          <option value="1h">Every 1 hour</option>
+        </select>
+        <button class="btn btn-secondary" id="scheduleBtn" onclick="saveSchedule()">Save Schedule</button>
+        <div id="scheduleStatus" class="schedule-meta">Scheduling is off.</div>
+      </div>
+
+      <div id="statusMsg" style="font-family:var(--mono);font-size:12px;color:var(--text-secondary);text-align:center;min-height:20px;"></div>
+    </aside>
+
+    <main class="output-panel">
+      <nav class="output-tabs">
+        <div class="tab active" onclick="switchTab('plan', this)">Test Plan</div>
+        <div class="tab" onclick="switchTab('cases', this)">Test Cases</div>
+        <div class="tab" onclick="switchTab('code', this)">Playwright Spec</div>
+        <div class="tab" onclick="switchTab('results', this)">Execution Results</div>
+        <div class="tab" onclick="switchTab('history', this)">Run History</div>
+      </nav>
+
+      <div class="tab-content">
+        <div id="tab-plan" class="tab-pane active">
+          <div class="empty-state" id="emptyPlan">
+            <div class="empty-icon">PLAN</div>
+            <p>Import a work item or enter a requirement,<br>then generate a coverage plan.</p>
+          </div>
+          <div id="planContent" style="display:none"></div>
+        </div>
+
+        <div id="tab-cases" class="tab-pane">
+          <div class="empty-state" id="emptyCases">
+            <div class="empty-icon">CASE</div>
+            <p>Executable scenarios will appear here<br>after generation.</p>
+          </div>
+          <div id="casesContent" style="display:none"></div>
+        </div>
+
+        <div id="tab-code" class="tab-pane">
+          <div class="empty-state" id="emptyCode">
+            <div class="empty-icon">CODE</div>
+            <p>Your ready-to-run Playwright spec<br>will appear here.</p>
+          </div>
+          <div id="codeContent" style="display:none"></div>
+        </div>
+
+        <div id="tab-results" class="tab-pane">
+          <div class="empty-state" id="emptyResults">
+            <div class="empty-icon">RUN</div>
+            <p>Run the generated spec to review<br>execution details and shareable results.</p>
+          </div>
+          <div id="resultsContent" style="display:none"></div>
+        </div>
+
+        <div id="tab-history" class="tab-pane">
+          <div class="empty-state" id="emptyHistory">
+            <div class="empty-icon">LOG</div>
+            <p>Saved executions will appear here<br>after you run a spec.</p>
+          </div>
+          <div id="historyContent" style="display:none"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API = 'http://localhost:3001';
+    let currentReport = null;
+    let runHistory = [];
+    let runHistoryFilter = 'all';
+    let hasGeneratedTests = false;
+    let scheduleState = null;
+    let scheduleCountdownTimer = null;
+
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function setLoading(pct) {
+      document.getElementById('loadingBar').style.width = pct + '%';
+    }
+
+    function setStatus(msg, dot = null) {
+      const el = document.getElementById('statusMsg');
+      if (!msg) { el.innerHTML = ''; return; }
+      const dotHtml = dot ? `<span class="status-dot ${dot}"></span> ` : '';
+      el.innerHTML = dotHtml + msg;
+    }
+
+    function updateHeaderStatus(date = new Date()) {
+      const el = document.getElementById('headerStatus');
+      if (!el) return;
+      el.textContent = `Updated ${date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+    }
+
+    function setActionState(state) {
+      const genBtn = document.getElementById('generateBtn');
+      const runBtn = document.getElementById('runBtn');
+
+      runBtn.classList.remove('btn-next', 'btn-attention');
+      genBtn.classList.remove('btn-next', 'btn-attention');
+
+      if (state === 'ready-to-run') {
+        runBtn.classList.add('btn-next', 'btn-attention');
+      }
+
+      if (state === 'running') {
+        runBtn.classList.add('btn-next');
+      }
+
+      if (state === 'idle') {
+        genBtn.classList.add('btn-next');
+      }
+    }
+
+    function markGeneratedTestsStale(reason = 'Inputs changed - regenerate tests before running.') {
+      const runBtn = document.getElementById('runBtn');
+      if (!hasGeneratedTests || runBtn.disabled) return;
+      hasGeneratedTests = false;
+      runBtn.disabled = true;
+      setActionState('idle');
+      setStatus(reason);
+    }
+
+    function bindInputInvalidation() {
+      const ids = ['url', 'story', 'criteria', 'azureStories'];
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', () => markGeneratedTestsStale());
+        el.addEventListener('change', () => markGeneratedTestsStale());
+      });
+    }
+
+    function switchTab(name, el) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('tab-' + name).classList.add('active');
+    }
+
+    async function runGenerationSequence(stages) {
+      for (const stage of stages) {
+        if (typeof stage.loading === 'number') setLoading(stage.loading);
+        if (stage.message) setStatus(stage.message, 'generating');
+        if (stage.delayMs) await delay(stage.delayMs);
+      }
+    }
+
+    async function generateTests() {
+      const url = document.getElementById('url').value.trim();
+      const story = document.getElementById('story').value.trim();
+      const criteria = document.getElementById('criteria').value.trim();
+      const azureSelect = document.getElementById('azureStories');
+      const sourceType = azureSelect.value ? 'azure-devops' : 'manual';
+      const sourceLabel = azureSelect.value
+        ? 'Azure DevOps Import'
+        : 'Manual Input';
+
+      if (!url || !story || !criteria) {
+        alert('Please fill in all three fields.');
+        return;
+      }
+
+      const genBtn = document.getElementById('generateBtn');
+      const runBtn = document.getElementById('runBtn');
+      genBtn.disabled = true;
+      runBtn.disabled = true;
+      setActionState('generating');
+
+      try {
+        await runGenerationSequence([
+          { loading: 12, message: 'Connecting to Claude...', delayMs: 900 },
+          { loading: 28, message: 'Analyzing acceptance criteria...', delayMs: 1100 },
+          { loading: 42, message: 'Building test plan...', delayMs: 900 },
+        ]);
+
+        const res = await fetch(`${API}/generate-tests`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, story, criteria, sourceType, sourceLabel }),
+        });
+
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        await runGenerationSequence([
+          { loading: 72, message: 'Generating Playwright spec...', delayMs: 1000 },
+          { loading: 88, message: 'Finalizing output...', delayMs: 850 },
+        ]);
+
+        renderPlan(data.testPlan);
+        renderCases(data.testCases);
+        renderCode(data.playwrightCode);
+        clearResults();
+
+        hasGeneratedTests = true;
+        runBtn.disabled = false;
+        setActionState('ready-to-run');
+        setLoading(100);
+        setStatus('Tests generated - ready to run.');
+        updateHeaderStatus();
+        setTimeout(() => setLoading(0), 600);
+        document.querySelectorAll('.tab')[0].click();
+      } catch (err) {
+        setStatus('Error: ' + err.message);
+        setLoading(0);
+      } finally {
+        genBtn.disabled = false;
+      }
+    }
+
+    async function runTests() {
+      const runBtn = document.getElementById('runBtn');
+      runBtn.disabled = true;
+      setActionState('running');
+      setLoading(30);
+      setStatus('Running Playwright...', 'running');
+
+      try {
+        const res = await fetch(`${API}/run-tests`, { method: 'POST' });
+        const data = await res.json();
+        setLoading(90);
+        if (data.error && !data.report) throw new Error(data.error);
+
+        const report = data.report || data;
+        renderResults(report);
+        await loadRunHistory();
+        setLoading(100);
+        setTimeout(() => setLoading(0), 600);
+        setStatus(report.success ? 'All tests passed.' : 'Some tests failed.');
+        updateHeaderStatus(new Date(report.finishedAt || Date.now()));
+        document.querySelectorAll('.tab')[3].click();
+        refreshSchedule();
+      } catch (err) {
+        setStatus('Error: ' + err.message);
+        setLoading(0);
+      } finally {
+        runBtn.disabled = false;
+        setActionState('ready-to-run');
+      }
+    }
+
+    function renderPlan(plan) {
+      document.getElementById('emptyPlan').style.display = 'none';
+      const el = document.getElementById('planContent');
+      el.style.display = 'block';
+      el.innerHTML = `
+        <div class="plan-card">
+          <h3>Test Plan</h3>
+          <p>${escHtml(plan)}</p>
+        </div>`;
+    }
+
+    function renderCases(cases) {
+      document.getElementById('emptyCases').style.display = 'none';
+      const el = document.getElementById('casesContent');
+      el.style.display = 'block';
+      el.innerHTML = (cases || []).map(tc => `
+        <div class="test-case">
+          <div class="test-case-header">
+            <span class="tc-id">${escHtml(tc.id || 'TC')}</span>
+            <span class="tc-name">${escHtml(tc.name || 'Unnamed test')}</span>
+          </div>
+          <p class="tc-desc">${escHtml(tc.description || '')}</p>
+          <ul class="tc-steps">
+            ${(tc.steps || []).map(s => `<li>${escHtml(s)}</li>`).join('')}
+          </ul>
+        </div>`).join('');
+    }
+
+    function renderCode(code) {
+      document.getElementById('emptyCode').style.display = 'none';
+      const el = document.getElementById('codeContent');
+      el.style.display = 'block';
+      el.innerHTML = `<pre class="code-block"><code>${escHtml(code || '// No Playwright code was returned.')}</code></pre>`;
+    }
+
+    function getReportContext(report) {
+      if (report?.context) return report.context;
+      return {
+        url: document.getElementById('url').value.trim(),
+        story: document.getElementById('story').value.trim(),
+        sourceLabel: document.getElementById('azureStories').value ? 'Azure DevOps Import' : 'Manual Input',
+      };
+    }
+
+    function getTargetHost(url) {
+      if (!url) return 'Target unavailable';
+      try {
+        return new URL(url).host.replace(/^www\./, '');
+      } catch {
+        return url;
+      }
+    }
+
+    function getWhyThisMatters(report) {
+      const totals = report?.totals || { total: 0, passed: 0, failed: 0 };
+      if (report?.success && totals.total > 0) {
+        return 'The tested user flow is behaving as expected, which makes this run easy to present as a stable demo scenario.';
+      }
+
+      if (totals.total === 0) {
+        return 'This result points to a setup or execution issue before functional validation began, which is useful to surface early in a QA workflow.';
+      }
+
+      return 'The suite exposed at least one behavior gap, giving the team a concrete signal on what needs attention before the flow is considered ready.';
+    }
+
+    function formatCountdown(targetTime) {
+      const remainingMs = new Date(targetTime).getTime() - Date.now();
+      if (remainingMs <= 0) return 'less than 1 minute';
+
+      const totalSeconds = Math.ceil(remainingMs / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return `${minutes}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function renderScheduleStatus() {
+      const el = document.getElementById('scheduleStatus');
+      if (!scheduleState) {
+        el.textContent = 'Unable to load schedule state.';
+        return;
+      }
+
+      const parts = [];
+
+      if (scheduleState.active) {
+        parts.push(`Active interval: ${scheduleState.intervalKey}.`);
+        if (scheduleState.nextRunAt) {
+          parts.push(`Next run in ${formatCountdown(scheduleState.nextRunAt)}.`);
+        }
+      } else {
+        parts.push('Scheduling is off.');
+      }
+
+      if (scheduleState.lastRunAt) {
+        parts.push(`Last scheduled run: ${new Date(scheduleState.lastRunAt).toLocaleString()}.`);
+      }
+
+      if (scheduleState.lastReport && scheduleState.lastReport.summary) {
+        parts.push(scheduleState.lastReport.summary);
+      }
+
+      el.textContent = parts.join(' ');
+    }
+
+    function startScheduleCountdown() {
+      if (scheduleCountdownTimer) clearInterval(scheduleCountdownTimer);
+      scheduleCountdownTimer = setInterval(() => {
+        if (!scheduleState?.active || !scheduleState?.nextRunAt) return;
+        renderScheduleStatus();
+      }, 1000);
+    }
+
+    function copyCurrentSummary() {
+      if (!currentReport) return;
+      const context = getReportContext(currentReport);
+      const payload = [
+        `VeriFlow Execution Summary`,
+        `Target: ${getTargetHost(context.url)}`,
+        `Source: ${context.sourceLabel || 'Manual Input'}`,
+        `Outcome: ${currentReport.success ? 'Passed' : 'Failed'}`,
+        `Duration: ${currentReport.durationText || 'Unknown'}`,
+        `Summary: ${currentReport.summary || 'Summary unavailable.'}`,
+        `Why this matters: ${getWhyThisMatters(currentReport)}`,
+      ].join('\n');
+
+      navigator.clipboard.writeText(payload)
+        .then(() => setStatus('Execution summary copied.'))
+        .catch(() => setStatus('Unable to copy summary.'));
+    }
+
+    function downloadCurrentReport() {
+      if (!currentReport) return;
+      const blob = new Blob([JSON.stringify(currentReport, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `veriflow-report-${Date.now()}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      setStatus('Execution report downloaded.');
+    }
+
+    function setRunHistoryFilter(filter) {
+      runHistoryFilter = filter;
+      renderHistoryView();
+    }
+
+    function getFilteredHistory(items) {
+      switch (runHistoryFilter) {
+        case 'passed':
+          return items.filter(item => item.success);
+        case 'failed':
+          return items.filter(item => !item.success);
+        case 'manual':
+          return items.filter(item => item.trigger === 'manual');
+        case 'scheduled':
+          return items.filter(item => item.trigger === 'scheduled');
+        default:
+          return items;
+      }
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    async function loadAzureStories() {
+      const select = document.getElementById('azureStories');
+      select.innerHTML = '<option value="">Loading...</option>';
+      try {
+        const res = await fetch(`${API}/azure-stories`);
+        const stories = await res.json();
+        if (stories.error) throw new Error(stories.error);
+        select.innerHTML = '<option value="">-- Select a work item --</option>';
+        stories.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = JSON.stringify(s);
+          opt.textContent = s.title;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        select.innerHTML = '<option value="">Unable to load stories</option>';
+        setStatus('Error: ' + err.message);
+      }
+    }
+
+    function fillStoryFromAzure() {
+      const select = document.getElementById('azureStories');
+      if (!select.value) return;
+      const story = JSON.parse(select.value);
+      document.getElementById('story').value = story.title || '';
+      document.getElementById('criteria').value = story.description || '';
+    }
+
+    async function refreshSchedule() {
+      try {
+        const res = await fetch(`${API}/schedule`);
+        const data = await res.json();
+        document.getElementById('scheduleInterval').value = data.intervalKey || 'off';
+        scheduleState = data;
+        renderScheduleStatus();
+        updateHeaderStatus(data.lastRunAt ? new Date(data.lastRunAt) : new Date());
+      } catch {
+        scheduleState = null;
+        renderScheduleStatus();
+      }
+    }
+
+    async function saveSchedule() {
+      const scheduleBtn = document.getElementById('scheduleBtn');
+      const intervalKey = document.getElementById('scheduleInterval').value;
+      scheduleBtn.disabled = true;
+      setStatus('Saving schedule...');
+
+      try {
+        const res = await fetch(`${API}/schedule`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ intervalKey }),
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        await refreshSchedule();
+        setStatus(intervalKey === 'off' ? 'Scheduled execution turned off.' : `Scheduled execution saved: ${intervalKey}.`);
+        updateHeaderStatus();
+      } catch (err) {
+        setStatus('Error: ' + err.message);
+      } finally {
+        scheduleBtn.disabled = false;
+      }
+    }
+
+    async function loadRunHistory() {
+      try {
+        const res = await fetch(`${API}/run-history`);
+        const data = await res.json();
+        runHistory = Array.isArray(data.items) ? data.items : [];
+      } catch {
+        runHistory = [];
+      }
+      refreshOutputViews();
+    }
+
+    function renderResults(report) {
+      currentReport = report;
+      refreshOutputViews();
+    }
+
+    function refreshOutputViews() {
+      renderResultsView();
+      renderHistoryView();
+    }
+
+    function renderResultsView() {
+      const emptyEl = document.getElementById('emptyResults');
+      const el = document.getElementById('resultsContent');
+
+      if (!currentReport) {
+        emptyEl.style.display = 'flex';
+        el.style.display = 'none';
+        el.innerHTML = '';
+        return;
+      }
+
+      emptyEl.style.display = 'none';
+      el.style.display = 'block';
+      el.innerHTML = renderCurrentReport(currentReport);
+    }
+
+    function renderCurrentReport(report) {
+      if (!report) {
+        return `
+          <div class="plan-card" style="margin-bottom:20px">
+            <h3>Execution Results</h3>
+            <p>No execution is selected in this session yet. Previous runs are listed below for review.</p>
+          </div>
+        `;
+      }
+
+      const totals = report.totals || { total: 0, passed: 0, failed: 0 };
+      const tests = report.tests || [];
+      const cls = report.success ? 'pass' : 'fail';
+      const trigger = report.trigger === 'scheduled' ? 'Scheduled Run' : 'Manual Run';
+      const context = getReportContext(report);
+      const targetHost = getTargetHost(context.url);
+      const whyThisMatters = getWhyThisMatters(report);
+
+      return `
+        <div class="result-banner ${cls}">
+          ${report.success ? 'All Tests Passed' : 'Some Tests Failed'}
+        </div>
+
+        <div class="result-toolbar">
+          <div class="meta-row" style="margin-bottom:0">
+            <div class="meta-chip"><strong>Target</strong> ${escHtml(targetHost)}</div>
+            <div class="meta-chip"><strong>Source</strong> ${escHtml(context.sourceLabel || 'Manual Input')}</div>
+            <div class="meta-chip"><strong>Execution</strong> ${escHtml(trigger)}</div>
+          </div>
+          <div class="result-actions">
+            <button class="btn btn-secondary" onclick="copyCurrentSummary()">Copy Summary</button>
+            <button class="btn btn-secondary" onclick="downloadCurrentReport()">Download Report</button>
+          </div>
+        </div>
+
+        <div class="plan-card" style="margin-bottom:20px">
+          <h3>AI Summary</h3>
+          <p>${escHtml(report.summary || 'Summary unavailable.')}</p>
+        </div>
+
+        <div class="plan-card" style="margin-bottom:20px">
+          <h3>Why This Matters</h3>
+          <p>${escHtml(whyThisMatters)}</p>
+        </div>
+
+        <div class="results-grid">
+          <div class="plan-card" style="text-align:center;margin:0">
+            <h3>Total</h3>
+            <p style="font-size:28px;font-weight:700;font-family:var(--mono)">${totals.total}</p>
+          </div>
+          <div class="plan-card" style="text-align:center;margin:0;border-color:rgba(34,197,94,0.22)">
+            <h3 style="color:var(--success)">Passed</h3>
+            <p style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--success)">${totals.passed}</p>
+          </div>
+          <div class="plan-card" style="text-align:center;margin:0;border-color:rgba(239,68,68,0.22)">
+            <h3 style="color:var(--error)">Failed</h3>
+            <p style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--error)">${totals.failed}</p>
+          </div>
+          <div class="plan-card" style="text-align:center;margin:0">
+            <h3>Duration</h3>
+            <p style="font-size:28px;font-weight:700;font-family:var(--mono)">${escHtml(report.durationText || 'Unknown')}</p>
+          </div>
+        </div>
+
+        <div class="plan-card" style="margin-bottom:20px">
+          <h3>Run Context</h3>
+          <p>${escHtml(trigger)}${report.finishedAt ? ` completed at ${new Date(report.finishedAt).toLocaleString()}.` : '.'}</p>
+        </div>
+
+        <div class="plan-card" style="margin-bottom:20px">
+          <h3>Per-Test Results</h3>
+          ${tests.length ? tests.map(test => {
+            const isPass = test.status === 'passed';
+            const color = isPass ? 'var(--success)' : 'var(--error)';
+            const icon = isPass ? 'PASS' : 'FAIL';
+            return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-color);font-family:var(--mono);font-size:12px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                <span style="color:${color};font-size:16px">${icon}</span>
+                <span style="word-break:break-word">${escHtml(test.name)}</span>
+              </div>
+              <span style="color:var(--text-secondary);white-space:nowrap">${escHtml(test.duration || 'n/a')}</span>
+            </div>`;
+          }).join('') : '<p>No per-test results were parsed from this run.</p>'}
+        </div>
+
+        <pre class="run-output">${escHtml(`${report.stdout || ''}\n${report.stderr || ''}`.trim() || 'No terminal output captured.')}</pre>
+      `;
+    }
+
+    function renderRunHistory(items) {
+      const filteredItems = getFilteredHistory(items);
+      const filterOptions = [
+        ['all', 'All'],
+        ['passed', 'Passed'],
+        ['failed', 'Failed'],
+        ['manual', 'Manual'],
+        ['scheduled', 'Scheduled'],
+      ];
+      const filters = `<div class="history-filters">${filterOptions.map(([value, label]) => `
+        <button class="filter-pill ${runHistoryFilter === value ? 'active' : ''}" onclick="setRunHistoryFilter('${value}')">${label}</button>
+      `).join('')}</div>`;
+
+      const content = filteredItems.length
+        ? `<div class="history-list">${filteredItems.map(item => {
+            const cls = item.success ? 'pass' : 'fail';
+            const trigger = item.trigger === 'scheduled' ? 'Scheduled' : 'Manual';
+            const totals = item.totals || { total: 0, passed: 0, failed: 0 };
+            return `
+              <div class="history-item">
+                <div>
+                  <div class="history-meta">
+                    <span class="history-badge ${cls}">${item.success ? 'Passed' : 'Failed'}</span>
+                    <span>${trigger} Run</span>
+                    <span>${item.finishedAt ? new Date(item.finishedAt).toLocaleString() : 'Time unavailable'}</span>
+                  </div>
+                  <div class="history-title">${escHtml(item.targetHost || 'Target site unavailable')}</div>
+                  <div class="history-summary">${escHtml(item.story || 'No requirement recorded')}</div>
+                  <div class="history-summary" style="margin-top:6px">${escHtml(item.summary || 'Summary unavailable.')}</div>
+                </div>
+                <div class="history-stats">
+                  <div>${totals.passed}/${totals.total} passed</div>
+                  <div>${escHtml(item.durationText || 'Unknown')}</div>
+                </div>
+              </div>
+            `;
+          }).join('')}</div>`
+        : `<p>${items.length ? 'No runs match the current filter yet.' : 'No saved executions yet. Run a spec once and it will appear here.'}</p>`;
+
+      return `
+        <div class="plan-card" style="margin-top:20px">
+          <h3>Run History</h3>
+          ${filters}
+          ${content}
+        </div>
+      `;
+    }
+
+    function renderHistoryView() {
+      const emptyEl = document.getElementById('emptyHistory');
+      const el = document.getElementById('historyContent');
+
+      if (!runHistory.length) {
+        emptyEl.style.display = 'flex';
+        el.style.display = 'none';
+        el.innerHTML = '';
+        return;
+      }
+
+      emptyEl.style.display = 'none';
+      el.style.display = 'block';
+      el.innerHTML = renderRunHistory(runHistory);
+    }
+
+    function clearResults() {
+      currentReport = null;
+      refreshOutputViews();
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      bindInputInvalidation();
+      setActionState('idle');
+      updateHeaderStatus();
+      startScheduleCountdown();
+      await Promise.all([refreshSchedule(), loadRunHistory()]);
+      setInterval(refreshSchedule, 15000);
+    });
+  </script>
+</body>
+</html>
+
+

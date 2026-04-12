@@ -74,17 +74,49 @@ For a quick demo:
 4. Run the generated Playwright suite
 5. Review `Execution Results` and `Run History`
 
-### Known demo scenario
+## Demo scenarios
 
-This is a stable example flow used during development:
+These are the four stable showcase scenarios used in development and demo prep.
+
+### 1. Wikipedia search
 
 - Target URL: `https://wikipedia.org`
-- Requirement: `As a user, I want to search the site so that I can find information quickly`
+- User story: `As a user, I want to search the site so that I can find information quickly`
 - Acceptance criteria:
   - A search input field is visible on the homepage
   - A user can type a query into the search input
   - A user can submit the search using Enter or the search action
   - Relevant search results are displayed after submission
+
+### 2. Python homepage
+
+- Target URL: `https://www.python.org`
+- User story: `As a user, I want to navigate to the homepage so that I can see the main content`
+- Acceptance criteria:
+  - The homepage loads successfully
+  - The Python logo or site branding is visible
+  - Primary navigation links are visible
+  - The main page content is displayed
+
+### 3. ExpandTesting form validation
+
+- Target URL: `https://practice.expandtesting.com/form-validation`
+- User story: `As a user, I want to see error messages so that I understand what went wrong`
+- Acceptance criteria:
+  - Required form fields are visible
+  - Submitting the form with empty required fields shows validation feedback
+  - Validation feedback remains visible after submission
+  - A user can identify which fields still need correction
+
+### 4. The Internet navigation
+
+- Target URL: `https://the-internet.herokuapp.com`
+- User story: `As a user, I want to click on links so that I can navigate between pages`
+- Acceptance criteria:
+  - A list of visible links is displayed on the homepage
+  - A user can click a visible link
+  - Clicking a link navigates to a different page
+  - The destination page displays a visible heading or main content
 
 ## Project structure
 

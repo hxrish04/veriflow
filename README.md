@@ -126,16 +126,27 @@ Acceptance criteria:
 - Clicking a link navigates to a different page
 - The destination page displays a visible heading or main content
 
-## Suggested screenshots
+## Screenshots
 
-If you want to make the repository feel more complete, these are the best screenshots to add:
+### Dashboard
 
-1. The main app screen with the Azure DevOps import area, action buttons, and top branding visible
-2. A generated Playwright spec shown in the `Playwright Spec` tab
-3. A passing `Execution Results` view with totals, summary, and per-test results visible
-4. The `Run History` tab with at least a few saved runs and filters visible
+![VeriFlow dashboard](docs/screenshots/dashboard.png)
 
-If you add screenshots later, create a folder like `docs/screenshots/` and reference them from this README.
+### Playwright spec
+
+![Generated Playwright spec](docs/screenshots/playwright-spec.png)
+
+### Execution results
+
+![Execution results](docs/screenshots/execution-results.png)
+
+### Run history
+
+![Run history](docs/screenshots/run-history.png)
+
+### Scheduled runs
+
+![Scheduled run countdown](docs/screenshots/scheduled-run.png)
 
 ## Project structure
 
@@ -170,21 +181,3 @@ veriflow/
 - Generated specs are written to `generated/generated.spec.js`
 - Run history is persisted by the server for refresh-safe viewing
 - Scheduled execution is designed for demo/prototype use while the local server is running
-
-## GitHub checklist
-
-For a clean GitHub upload:
-
-1. Keep the repository private
-2. Do not upload `.env`
-3. Install dependencies locally before running the app
-4. Use `.env.example` as the setup template for anyone who needs to run the project
-
-Suggested repository name:
-
-- `veriflow`
-- `veriflow-qa-copilot`
-
-Suggested short description:
-
-- `QA automation copilot that turns Azure DevOps requirements into Playwright tests, executes them, and summarizes the results in a reviewable UI.`

@@ -960,6 +960,8 @@
     }
 
     async function runGenerationSequence(stages) {
+      // Even when a curated scenario resolves quickly, staged status updates
+      // make generation feel like a real product workflow instead of an instant jump.
       for (const stage of stages) {
         if (typeof stage.loading === 'number') setLoading(stage.loading);
         if (stage.message) setStatus(stage.message, 'generating');
@@ -1097,6 +1099,8 @@
     }
 
     function getReportContext(report) {
+      // Fall back to the current form values so copied summaries still work
+      // even if the report payload does not include the original context.
       if (report?.context) return report.context;
       return {
         url: document.getElementById('url').value.trim(),
@@ -1147,6 +1151,8 @@
       const parts = [];
 
       if (scheduleState.active) {
+        // Pair the saved interval with a live countdown so scheduled reruns
+        // feel visible in the UI instead of hidden in the background.
         parts.push(`Active interval: ${scheduleState.intervalKey}.`);
         if (scheduleState.nextRunAt) {
           parts.push(`Next run in ${formatCountdown(scheduleState.nextRunAt)}.`);
@@ -1315,6 +1321,8 @@
     }
 
     function refreshOutputViews() {
+      // Results and history are updated together in several flows, so one
+      // helper keeps those refreshes consistent.
       renderResultsView();
       renderHistoryView();
     }

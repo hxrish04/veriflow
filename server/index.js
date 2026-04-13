@@ -47,6 +47,8 @@ let lastGenerationContext = null;
 let runHistory = [];
 
 function buildKnownScenario({ url, story, criteria }) {
+  // These curated scenarios keep the demo flows stable when the same
+  // requirements are regenerated repeatedly from the UI.
   const normalizedUrl = String(url || "").toLowerCase();
   const normalizedStory = String(story || "").toLowerCase();
   const normalizedCriteria = String(criteria || "").toLowerCase();
@@ -613,6 +615,8 @@ function buildReport({ success, stdout, stderr, startedAt, finishedAt, trigger =
   let durationMs = finishedAt && startedAt ? finishedAt - startedAt : null;
 
   for (const line of lines) {
+    // Playwright's list reporter can emit either unicode ticks/crosses or
+    // plain "ok"/"x" tokens depending on the shell and environment.
     const passMatch = line.match(/(?:[\u2713\u221A]|ok)\s+\d+\s+(.+?)\s+\(([\d.]+\s*(?:ms|s|m))\)/i);
     if (passMatch) {
       tests.push({
@@ -815,6 +819,8 @@ function startScheduledRun(intervalKey) {
     ...scheduledRun,
     intervalKey,
     active: true,
+    // The UI countdown uses nextRunAt so users can see exactly when the next
+    // automated execution is expected to fire.
     nextRunAt: new Date(Date.now() + intervalMs).toISOString(),
     timer: setInterval(async () => {
       const result = await executeGeneratedTests("scheduled");
@@ -878,6 +884,8 @@ app.post("/generate-tests", async (req, res) => {
   try {
     const knownScenario = buildKnownScenario({ url, story, criteria });
     if (knownScenario) {
+      // Known demo scenarios bypass model generation so the app can return
+      // reliable Playwright coverage for showcase flows.
       await fs.mkdir(GENERATED_DIR, { recursive: true });
       await fs.writeFile(GENERATED_SPEC_PATH, knownScenario.playwrightCode, "utf8");
       lastGenerationContext = { url, story, criteria, sourceType, sourceLabel };

@@ -9,6 +9,12 @@ It is built as a lightweight internal-tool style MVP focused on a practical work
 3. Execute the generated suite against a target URL
 4. Review the result summary, per-test outcomes, and saved run history
 
+## System overview
+
+This diagram shows how VeriFlow moves from requirement input to AI-generated Playwright coverage, browser execution, and reviewable reporting outputs.
+
+![VeriFlow system diagram](docs/veriflow-system-diagram.svg)
+
 ## Why this project exists
 
 Product and QA teams often describe behavior in user stories and acceptance criteria, while automation lives separately in test code. VeriFlow closes that gap by converting requirement text into executable browser tests and making the output easy to review.

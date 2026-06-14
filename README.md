@@ -155,7 +155,7 @@ executes the suite in an isolated sandbox:
   restricted network (default `none`). Only the project directory is mounted so
   `results.json` is written back and parsed exactly as before.
 - **Hardened process fallback:** when Docker is unavailable, the suite runs via
-  the local Playwright CLI invoked with `node <cli> test` — no shell, and a
+  the local Playwright CLI invoked with `node <cli> test`, no shell, and a
   stripped environment that excludes `ANTHROPIC_API_KEY`, `AZURE_DEVOPS_PAT`,
   and every other secret.
 
@@ -166,7 +166,7 @@ reachable, otherwise process). The mode that actually ran is shown in the report
 
 When a generated test fails on a selector problem, `server/selfheal.js` captures
 the live page DOM and the error, asks Claude for one repaired selector, applies
-it to the spec, and re-runs the suite **once** (bounded — at most one repair pass
+it to the spec, and re-runs the suite **once** (bounded, at most one repair pass
 per run, never loops). Every repair is recorded as `old -> new` and surfaced in
 the report under "AI Self-Healed Selectors".
 

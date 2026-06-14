@@ -4,3 +4,4 @@ generated/
 test-results/
 playwright-report/
 backups/
+tests/smoke/smoke-results.json

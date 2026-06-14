@@ -1343,6 +1343,46 @@
       el.innerHTML = renderCurrentReport(currentReport);
     }
 
+    function renderHealedSelectors(healed) {
+      if (!Array.isArray(healed) || healed.length === 0) return '';
+      const rows = healed.map(h => `
+        <div style="padding:8px 0;border-bottom:1px solid var(--border-color);font-family:var(--mono);font-size:12px">
+          <div style="color:var(--text-secondary);margin-bottom:4px">${escHtml(h.spec || '')}</div>
+          <div><span style="color:var(--error)">${escHtml(h.oldSelector)}</span> &rarr; <span style="color:var(--success)">${escHtml(h.newSelector)}</span></div>
+        </div>`).join('');
+      return `
+        <div class="plan-card" style="margin-bottom:20px">
+          <h3>AI Self-Healed Selectors</h3>
+          <p style="color:var(--text-secondary);font-size:13px">${healed.length} selector(s) were repaired by Claude and the suite was re-run once.</p>
+          ${rows}
+        </div>`;
+    }
+
+    function renderTraceability(matrix) {
+      if (!matrix || !Array.isArray(matrix.rows) || matrix.rows.length === 0) return '';
+      const colors = { passing: 'var(--success)', failing: 'var(--error)', partial: '#f59e0b', uncovered: 'var(--text-secondary)' };
+      const rows = matrix.rows.map(row => {
+        const color = colors[row.coverage] || 'var(--text-secondary)';
+        const testNames = (row.tests || []).map(t => escHtml(t.name)).join('<br>') || '<span style="color:var(--text-secondary)">No mapped test</span>';
+        return `
+          <div style="display:grid;grid-template-columns:60px 1fr 1fr 90px;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-color);font-size:12px">
+            <span style="font-family:var(--mono);color:var(--text-secondary)">${escHtml(row.id)}</span>
+            <span style="word-break:break-word">${escHtml(row.criterion)}</span>
+            <span style="font-family:var(--mono);word-break:break-word">${testNames}</span>
+            <span style="color:${color};text-transform:uppercase;font-weight:600">${escHtml(row.coverage)}</span>
+          </div>`;
+      }).join('');
+      return `
+        <div class="plan-card" style="margin-bottom:20px">
+          <h3>Traceability Matrix</h3>
+          <p style="color:var(--text-secondary);font-size:13px">${matrix.requirementsCovered}/${matrix.requirementsTotal} acceptance criteria covered, ${matrix.requirementsPassing} passing.</p>
+          <div style="display:grid;grid-template-columns:60px 1fr 1fr 90px;gap:10px;padding:6px 0;border-bottom:2px solid var(--border-color);font-size:11px;text-transform:uppercase;color:var(--text-secondary)">
+            <span>ID</span><span>Acceptance Criterion</span><span>Mapped Test(s)</span><span>Result</span>
+          </div>
+          ${rows}
+        </div>`;
+    }
+
     function renderCurrentReport(report) {
       if (!report) {
         return `
@@ -1371,6 +1411,7 @@
             <div class="meta-chip"><strong>Target</strong> ${escHtml(targetHost)}</div>
             <div class="meta-chip"><strong>Source</strong> ${escHtml(context.sourceLabel || 'Manual Input')}</div>
             <div class="meta-chip"><strong>Execution</strong> ${escHtml(trigger)}</div>
+            ${report.sandboxMode ? `<div class="meta-chip"><strong>Sandbox</strong> ${escHtml(report.sandboxMode)}</div>` : ''}
           </div>
           <div class="result-actions">
             <button class="btn btn-secondary" onclick="copyCurrentSummary()">Copy Summary</button>
@@ -1411,6 +1452,10 @@
           <h3>Run Context</h3>
           <p>${escHtml(trigger)}${report.finishedAt ? ` completed at ${new Date(report.finishedAt).toLocaleString()}.` : '.'}</p>
         </div>
+
+        ${renderHealedSelectors(report.healed)}
+
+        ${renderTraceability(report.traceability)}
 
         <div class="plan-card" style="margin-bottom:20px">
           <h3>Per-Test Results</h3>

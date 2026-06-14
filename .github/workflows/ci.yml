@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  build-and-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Syntax check all server/test JS
+        run: |
+          for f in $(git ls-files 'server/*.js' 'tests/**/*.js' 'tests/**/*.mjs' playwright.config.js); do
+            echo "node --check $f"
+            node --check "$f"
+          done
+
+      - name: Lint (if a lint script exists)
+        run: |
+          if npm run | grep -qE '^\s*lint'; then
+            npm run lint
+          else
+            echo "No lint script defined; skipping."
+          fi
+
+      - name: Smoke - self-contained Playwright spec
+        run: npm run smoke:spec
+        env:
+          # Force the hardened process sandbox in CI (no Docker-in-Docker).
+          VERIFLOW_SANDBOX: process
+
+      - name: Smoke - end-to-end pipeline (sandbox + traceability)
+        run: npm run smoke
+        env:
+          VERIFLOW_SANDBOX: process
+
+      - name: Upload smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-results
+          path: |
+            tests/smoke/smoke-results.json
+          if-no-files-found: ignore

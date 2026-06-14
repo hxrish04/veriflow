@@ -4,9 +4,10 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs/promises";
-import { exec } from "child_process";
-import { promisify } from "util";
 import Anthropic from "@anthropic-ai/sdk";
+import { runSandboxedTests } from "./sandbox.js";
+import { attemptHeal } from "./selfheal.js";
+import { buildTraceabilityMatrix } from "./traceability.js";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ const ROOT = path.join(__dirname, "..");
 const GENERATED_DIR = path.join(ROOT, "generated");
 const GENERATED_SPEC_PATH = path.join(GENERATED_DIR, "generated.spec.js");
 const RESULTS_JSON_PATH = path.join(GENERATED_DIR, "results.json");
+const TRACEABILITY_JSON_PATH = path.join(GENERATED_DIR, "traceability.json");
 const DATA_DIR = path.join(__dirname, "data");
 const RUN_HISTORY_PATH = path.join(DATA_DIR, "run-history.json");
 const MAX_RUN_HISTORY = 10;
@@ -28,7 +30,6 @@ const SCHEDULE_INTERVALS = {
 
 const app = express();
 const port = process.env.PORT || 3001;
-const execAsync = promisify(exec);
 
 app.use(cors());
 app.use(express.json());
@@ -610,6 +611,15 @@ function collectSpecs(suite, acc) {
   for (const child of suite.suites || []) collectSpecs(child, acc);
 }
 
+// Read and parse the authoritative Playwright JSON report, or null if absent.
+async function readResultsJson() {
+  try {
+    return JSON.parse(await fs.readFile(RESULTS_JSON_PATH, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
 // Build a run report from Playwright's authoritative JSON reporter output.
 // Pass/fail/skipped counts come from `stats`, never from scraping reporter text.
 function buildReportFromJson(jsonReport, { startedAt, finishedAt, trigger = "manual", stdout = "", stderr = "" }) {
@@ -744,28 +754,38 @@ async function executeGeneratedTests(trigger = "manual") {
   // Remove any stale report so we never parse a previous run's results.
   await fs.rm(RESULTS_JSON_PATH, { force: true }).catch(() => {});
 
-  // Playwright exits non-zero when tests fail OR when no tests are found, so a
-  // throw here is NOT inherently a failure of the run mechanism — capture the
-  // output and let the JSON report decide the actual outcome.
-  let stdout = "";
-  let stderr = "";
-  try {
-    const res = await execAsync(`npx playwright test`, { cwd: ROOT, timeout: 60000 });
-    stdout = res.stdout || "";
-    stderr = res.stderr || "";
-  } catch (err) {
-    stdout = err.stdout || "";
-    stderr = err.stderr || err.message || "";
-  }
-  const finishedAt = Date.now();
+  // Run the suite inside the sandbox (Docker when available, else a hardened
+  // child_process). The sandbox always writes generated/results.json into ROOT,
+  // so parsing below is identical regardless of mode.
+  const run = await runSandboxedTests({ cwd: ROOT, timeout: 60000 });
+  let stdout = run.stdout || "";
+  let stderr = run.stderr || "";
+  const sandboxMode = run.mode;
 
   // Read the authoritative JSON report.
-  let jsonReport = null;
-  try {
-    jsonReport = JSON.parse(await fs.readFile(RESULTS_JSON_PATH, "utf8"));
-  } catch {
-    jsonReport = null;
+  let jsonReport = await readResultsJson();
+
+  // AI self-healing: if a spec failed on a selector problem, ask Claude to
+  // repair it and re-run the suite ONCE (bounded, never loops).
+  let healed = [];
+  if (jsonReport && (jsonReport.stats?.unexpected ?? 0) > 0) {
+    const heal = await attemptHeal({
+      jsonReport,
+      specPath: GENERATED_SPEC_PATH,
+      anthropic,
+      url: lastGenerationContext?.url,
+    });
+    healed = heal.healed;
+    if (heal.applied) {
+      await fs.rm(RESULTS_JSON_PATH, { force: true }).catch(() => {});
+      const rerun = await runSandboxedTests({ cwd: ROOT, timeout: 60000 });
+      stdout = `${stdout}\n[self-heal] re-ran suite after repairing ${healed.length} selector(s).\n${rerun.stdout || ""}`;
+      stderr = `${stderr}\n${rerun.stderr || ""}`;
+      jsonReport = (await readResultsJson()) || jsonReport;
+    }
   }
+
+  const finishedAt = Date.now();
 
   let report;
   if (jsonReport) {
@@ -788,6 +808,13 @@ async function executeGeneratedTests(trigger = "manual") {
   }
 
   report.context = lastGenerationContext;
+  report.sandboxMode = sandboxMode;
+  report.healed = healed;
+  report.traceability = await buildTraceabilityMatrix({
+    context: lastGenerationContext,
+    report,
+    outPath: TRACEABILITY_JSON_PATH,
+  });
   report.summary = await generateRunSummary(report, lastGenerationContext);
   await recordRun(report, lastGenerationContext);
   return { success: report.success, report };
@@ -948,6 +975,15 @@ app.get("/generated-code", async (_req, res) => {
 
 app.get("/run-history", (_req, res) => {
   res.json({ items: runHistory });
+});
+
+app.get("/traceability", async (_req, res) => {
+  try {
+    const matrix = JSON.parse(await fs.readFile(TRACEABILITY_JSON_PATH, "utf8"));
+    res.json(matrix);
+  } catch {
+    res.json({ rows: [], tests: [], requirementsTotal: 0 });
+  }
 });
 
 app.get("/schedule", (_req, res) => {

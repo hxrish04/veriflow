@@ -28,6 +28,10 @@ Product and QA teams often describe behavior in user stories and acceptance crit
 - Plain-English run summaries for quick review
 - Saved run history with filtering
 - Scheduled reruns while the server is active
+- Sandboxed execution of AI-generated tests (Docker, with a hardened process fallback)
+- AI self-healing of broken selectors (bounded to one repair pass per run)
+- Requirement-to-test traceability matrix surfaced in the report
+- GitHub Actions CI with a self-contained smoke test (no Azure DevOps needed)
 
 ## Tech stack
 
@@ -56,6 +60,10 @@ AZURE_DEVOPS_ORG=your_org
 AZURE_DEVOPS_PROJECT=your_project
 AZURE_DEVOPS_PAT=your_pat
 PORT=3001
+# Optional: sandbox mode (docker | process). Defaults to docker if available, else process.
+VERIFLOW_SANDBOX=
+# Optional: Docker sandbox network (default none; use bridge for public sites).
+VERIFLOW_DOCKER_NETWORK=
 ```
 
 ### 3. Start the app
@@ -132,6 +140,55 @@ Acceptance criteria:
 - Clicking a link navigates to a different page
 - The destination page displays a visible heading or main content
 
+## Security and reliability features
+
+### 1. Sandboxed test execution
+
+AI-generated test code is untrusted. VeriFlow never runs it directly against the
+host shell or with the server's secrets in scope. Instead `server/sandbox.js`
+executes the suite in an isolated sandbox:
+
+- **Docker (preferred):** runs in the official Playwright image
+  (`mcr.microsoft.com/playwright:v<matching-version>-jammy`) with browsers
+  preinstalled. The container gets `--cap-drop ALL`, `--security-opt
+  no-new-privileges`, no host env / secrets (`--env-file /dev/null`), and a
+  restricted network (default `none`). Only the project directory is mounted so
+  `results.json` is written back and parsed exactly as before.
+- **Hardened process fallback:** when Docker is unavailable, the suite runs via
+  the local Playwright CLI invoked with `node <cli> test` — no shell, and a
+  stripped environment that excludes `ANTHROPIC_API_KEY`, `AZURE_DEVOPS_PAT`,
+  and every other secret.
+
+Control with `VERIFLOW_SANDBOX=docker|process` (default: docker if the daemon is
+reachable, otherwise process). The mode that actually ran is shown in the report.
+
+### 2. AI self-healing tests
+
+When a generated test fails on a selector problem, `server/selfheal.js` captures
+the live page DOM and the error, asks Claude for one repaired selector, applies
+it to the spec, and re-runs the suite **once** (bounded — at most one repair pass
+per run, never loops). Every repair is recorded as `old -> new` and surfaced in
+the report under "AI Self-Healed Selectors".
+
+### 3. CI and traceability matrix
+
+- `.github/workflows/ci.yml` installs dependencies, installs Playwright
+  browsers, runs `node --check` on the server/test sources, lints if a `lint`
+  script exists, and runs a self-contained smoke test against a local HTML
+  fixture (no Azure DevOps, no credentials).
+- After every run, `server/traceability.js` maps each acceptance criterion to
+  the generated test(s) covering it and folds in their pass/fail result. The
+  matrix is written to `generated/traceability.json`, returned in the run report,
+  exposed at `GET /traceability`, and rendered as a "Traceability Matrix" table
+  in the UI.
+
+Run the smoke checks locally:
+
+```bash
+npm run smoke        # end-to-end: sandbox -> results.json -> traceability.json
+npm run smoke:spec   # the self-contained Playwright smoke spec
+```
+
 ## Screenshots
 
 ### Dashboard
@@ -164,8 +221,17 @@ veriflow/
   server/
     data/
     index.js
+    sandbox.js
+    selfheal.js
+    traceability.js
   generated/
     generated.spec.js
+    traceability.json
+  tests/
+    smoke/
+  .github/
+    workflows/
+      ci.yml
   playwright.config.js
   package.json
 ```
@@ -179,11 +245,13 @@ veriflow/
 | POST | `/run-tests` | Execute the generated spec and return a structured report |
 | GET | `/generated-code` | Return the saved generated Playwright spec |
 | GET | `/run-history` | Return persisted execution history |
+| GET | `/traceability` | Return the latest requirement-to-test traceability matrix |
 | GET | `/schedule` | Return current scheduled execution state |
 | POST | `/schedule` | Turn scheduled execution off or set `5m`, `30m`, or `1h` |
 
 ## Notes
 
 - Generated specs are written to `generated/generated.spec.js`
+- The traceability matrix is written to `generated/traceability.json`
 - Run history is persisted by the server for refresh-safe viewing
 - Scheduled execution is designed for demo/prototype use while the local server is running

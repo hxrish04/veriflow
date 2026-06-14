@@ -6,7 +6,9 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "node --watch server/index.js"
+    "dev": "node --watch server/index.js",
+    "smoke": "node tests/smoke/pipeline.smoke.mjs",
+    "smoke:spec": "playwright test --config tests/smoke/smoke.config.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",

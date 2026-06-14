@@ -15,6 +15,7 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.join(__dirname, "..");
 const GENERATED_DIR = path.join(ROOT, "generated");
 const GENERATED_SPEC_PATH = path.join(GENERATED_DIR, "generated.spec.js");
+const RESULTS_JSON_PATH = path.join(GENERATED_DIR, "results.json");
 const DATA_DIR = path.join(__dirname, "data");
 const RUN_HISTORY_PATH = path.join(DATA_DIR, "run-history.json");
 const MAX_RUN_HISTORY = 10;
@@ -582,20 +583,6 @@ async function recordRun(report, context) {
   await saveRunHistory();
 }
 
-function parseDurationMs(value) {
-  if (!value) return null;
-  const match = String(value).trim().match(/^([\d.]+)\s*(ms|s|m)$/i);
-  if (!match) return null;
-
-  const amount = Number(match[1]);
-  const unit = match[2].toLowerCase();
-
-  if (unit === "ms") return Math.round(amount);
-  if (unit === "s") return Math.round(amount * 1000);
-  if (unit === "m") return Math.round(amount * 60 * 1000);
-  return null;
-}
-
 function formatDuration(ms) {
   if (ms == null || Number.isNaN(ms)) return "Unknown";
   if (ms < 1000) return `${ms}ms`;
@@ -608,44 +595,45 @@ function formatDuration(ms) {
   return `${minutes % 1 === 0 ? minutes.toFixed(0) : minutes.toFixed(1)}m`;
 }
 
-function buildReport({ success, stdout, stderr, startedAt, finishedAt, trigger = "manual" }) {
-  const combined = `${stdout || ""}\n${stderr || ""}`;
-  const lines = combined.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-  const tests = [];
-  let durationMs = finishedAt && startedAt ? finishedAt - startedAt : null;
-
-  for (const line of lines) {
-    // Playwright's list reporter can emit either unicode ticks/crosses or
-    // plain "ok"/"x" tokens depending on the shell and environment.
-    const passMatch = line.match(/(?:[\u2713\u221A]|ok)\s+\d+\s+(.+?)\s+\(([\d.]+\s*(?:ms|s|m))\)/i);
-    if (passMatch) {
-      tests.push({
-        name: passMatch[1],
-        status: "passed",
-        duration: passMatch[2],
-      });
-      continue;
-    }
-
-    const failMatch = line.match(/(?:[\u2718x\u00D7]|fail|not ok)\s+\d+\s+(.+?)(?:\s+\(([\d.]+\s*(?:ms|s|m))\))?$/i);
-    if (failMatch) {
-      tests.push({
-        name: failMatch[1],
-        status: "failed",
-        duration: failMatch[2] || "",
-      });
-      continue;
-    }
-
-    const durationMatch = line.match(/\(([\d.]+\s*(?:ms|s|m))\)/i);
-    if (line.includes("passed") && durationMatch) {
-      durationMs = parseDurationMs(durationMatch[1]) ?? durationMs;
-    }
+// Recursively walk the Playwright JSON report's nested suites and collect a
+// flat, named list of specs with their outcome.
+function collectSpecs(suite, acc) {
+  for (const spec of suite.specs || []) {
+    const attempts = (spec.tests || []).flatMap((t) => t.results || []);
+    const durationMs = attempts.reduce((sum, r) => sum + (r.duration || 0), 0);
+    const everySkipped =
+      (spec.tests || []).length > 0 &&
+      (spec.tests || []).every((t) => t.status === "skipped");
+    const status = everySkipped ? "skipped" : spec.ok ? "passed" : "failed";
+    acc.push({ name: spec.title, status, duration: formatDuration(durationMs) });
   }
+  for (const child of suite.suites || []) collectSpecs(child, acc);
+}
 
-  const passed = tests.filter((test) => test.status === "passed").length;
-  const failed = tests.filter((test) => test.status === "failed").length;
-  const total = tests.length || passed + failed;
+// Build a run report from Playwright's authoritative JSON reporter output.
+// Pass/fail/skipped counts come from `stats`, never from scraping reporter text.
+function buildReportFromJson(jsonReport, { startedAt, finishedAt, trigger = "manual", stdout = "", stderr = "" }) {
+  const stats = jsonReport?.stats || {};
+  const tests = [];
+  for (const suite of jsonReport?.suites || []) collectSpecs(suite, tests);
+
+  const passed = stats.expected ?? tests.filter((t) => t.status === "passed").length;
+  const failed = stats.unexpected ?? tests.filter((t) => t.status === "failed").length;
+  const flaky = stats.flaky ?? 0;
+  const skipped = stats.skipped ?? tests.filter((t) => t.status === "skipped").length;
+  const total = passed + failed + flaky + skipped;
+
+  const durationMs =
+    typeof stats.duration === "number"
+      ? Math.round(stats.duration)
+      : finishedAt && startedAt
+      ? finishedAt - startedAt
+      : null;
+
+  // A run only "succeeds" if tests actually ran and none failed. This is the
+  // single source of truth \u2014 previously success was hardcoded true on any
+  // non-throwing exec, so a run with zero tests reported as "passed".
+  const success = total > 0 && failed === 0;
 
   return {
     trigger,
@@ -654,11 +642,7 @@ function buildReport({ success, stdout, stderr, startedAt, finishedAt, trigger =
     finishedAt: finishedAt ? new Date(finishedAt).toISOString() : null,
     durationMs,
     durationText: formatDuration(durationMs),
-    totals: {
-      total,
-      passed,
-      failed,
-    },
+    totals: { total, passed, failed, flaky, skipped },
     tests,
     stdout: stdout || "",
     stderr: stderr || "",
@@ -745,7 +729,7 @@ async function executeGeneratedTests(trigger = "manual") {
       finishedAt: new Date().toISOString(),
       durationMs: 0,
       durationText: "0ms",
-      totals: { total: 0, passed: 0, failed: 0 },
+      totals: { total: 0, passed: 0, failed: 0, flaky: 0, skipped: 0 },
       tests: [],
       stdout: "",
       stderr: "No generated test file found.",
@@ -757,32 +741,56 @@ async function executeGeneratedTests(trigger = "manual") {
 
   const startedAt = Date.now();
 
+  // Remove any stale report so we never parse a previous run's results.
+  await fs.rm(RESULTS_JSON_PATH, { force: true }).catch(() => {});
+
+  // Playwright exits non-zero when tests fail OR when no tests are found, so a
+  // throw here is NOT inherently a failure of the run mechanism — capture the
+  // output and let the JSON report decide the actual outcome.
+  let stdout = "";
+  let stderr = "";
   try {
-    const { stdout, stderr } = await execAsync(`npx playwright test --reporter=list`, {
-      cwd: ROOT,
-      timeout: 60000,
-    });
-    const finishedAt = Date.now();
-    const report = buildReport({ success: true, stdout, stderr, startedAt, finishedAt, trigger });
-    report.context = lastGenerationContext;
-    report.summary = await generateRunSummary(report, lastGenerationContext);
-    await recordRun(report, lastGenerationContext);
-    return { success: true, report };
+    const res = await execAsync(`npx playwright test`, { cwd: ROOT, timeout: 60000 });
+    stdout = res.stdout || "";
+    stderr = res.stderr || "";
   } catch (err) {
-    const finishedAt = Date.now();
-    const report = buildReport({
-      success: false,
-      stdout: err.stdout || "",
-      stderr: err.stderr || err.message,
-      startedAt,
-      finishedAt,
-      trigger,
-    });
-    report.context = lastGenerationContext;
-    report.summary = await generateRunSummary(report, lastGenerationContext);
-    await recordRun(report, lastGenerationContext);
-    return { success: false, report };
+    stdout = err.stdout || "";
+    stderr = err.stderr || err.message || "";
   }
+  const finishedAt = Date.now();
+
+  // Read the authoritative JSON report.
+  let jsonReport = null;
+  try {
+    jsonReport = JSON.parse(await fs.readFile(RESULTS_JSON_PATH, "utf8"));
+  } catch {
+    jsonReport = null;
+  }
+
+  let report;
+  if (jsonReport) {
+    report = buildReportFromJson(jsonReport, { startedAt, finishedAt, trigger, stdout, stderr });
+  } else {
+    // No JSON report means the suite crashed before any test executed (e.g. a
+    // syntax error in the generated spec, or no tests found).
+    report = {
+      trigger,
+      success: false,
+      startedAt: new Date(startedAt).toISOString(),
+      finishedAt: new Date(finishedAt).toISOString(),
+      durationMs: finishedAt - startedAt,
+      durationText: formatDuration(finishedAt - startedAt),
+      totals: { total: 0, passed: 0, failed: 0, flaky: 0, skipped: 0 },
+      tests: [],
+      stdout,
+      stderr: stderr || "Test run produced no results.",
+    };
+  }
+
+  report.context = lastGenerationContext;
+  report.summary = await generateRunSummary(report, lastGenerationContext);
+  await recordRun(report, lastGenerationContext);
+  return { success: report.success, report };
 }
 
 function getScheduleState() {

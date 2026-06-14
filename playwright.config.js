@@ -6,5 +6,11 @@ export default defineConfig({
   use: {
     headless: true,
   },
-  reporter: 'list',
+  // `list` for human-readable stdout logs; `json` writes an authoritative,
+  // machine-parseable report (pass/fail/skipped counts) that the server reads
+  // instead of scraping reporter text.
+  reporter: [
+    ['list'],
+    ['json', { outputFile: 'generated/results.json' }],
+  ],
 });

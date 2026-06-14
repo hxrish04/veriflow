@@ -1,5 +1,90 @@
 [
   {
+    "id": "2026-06-14T21:45:40.445Z",
+    "trigger": "manual",
+    "success": true,
+    "finishedAt": "2026-06-14T21:45:40.445Z",
+    "durationText": "2.1s",
+    "totals": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "summary": "This manual VeriFlow test run validated the TaskFlow sign-in page on a local development server and passed all 6 tests in 2.1 seconds. The suite confirmed critical login UI elements including the page title, sign-in heading, email and password input fields, and the sign-in button are all present and correctly displayed. The tests verified both individual component existence and their collective presence, ensuring the authentication interface is fully functional and ready for user interaction.",
+    "targetHost": "127.0.0.1:4200",
+    "story": "As a user, I can see the TaskFlow sign-in page with an email field, a password field, and a Sign in button so that I can log into my account."
+  },
+  {
+    "id": "2026-06-14T21:39:56.994Z",
+    "trigger": "manual",
+    "success": true,
+    "finishedAt": "2026-06-14T21:39:56.994Z",
+    "durationText": "2.2s",
+    "totals": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "summary": "VeriFlow completed a manual test run against the TaskFlow sign-in page at http://127.0.0.1:4200/ in 2.2 seconds with all 6 tests passing. The suite validated critical authentication UI components including page title verification, sign-in heading display, email and password input field presence, and the sign-in button availability. This demo-ready execution confirms the login interface meets acceptance criteria and is fully functional for user authentication workflows.",
+    "targetHost": "127.0.0.1:4200",
+    "story": "As a user, I can see the TaskFlow sign-in page with an email field, a password field, and a Sign in button so that I can log into my account."
+  },
+  {
+    "id": "2026-06-14T21:38:20.840Z",
+    "trigger": "manual",
+    "success": false,
+    "finishedAt": "2026-06-14T21:38:20.840Z",
+    "durationText": "18.0s",
+    "totals": {
+      "total": 4,
+      "passed": 0,
+      "failed": 4,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "summary": "This manual VeriFlow test run against example.com completed in 18.0 seconds with all 4 tests failing. The suite validated core homepage elements including page title verification, heading display confirmation, and the presence of an informational link. Tests covered individual acceptance criteria plus an end-to-end verification scenario. The failures indicate the Example Domain homepage is not meeting expected specifications for visitor-facing content, suggesting either the site structure has changed or test assertions require adjustment before this suite is demo-ready.",
+    "targetHost": "example.com",
+    "story": "As a visitor, I can view the Example Domain homepage and find a link to more information."
+  },
+  {
+    "id": "2026-06-14T21:37:40.757Z",
+    "trigger": "manual",
+    "success": false,
+    "finishedAt": "2026-06-14T21:37:40.757Z",
+    "durationText": "18.2s",
+    "totals": {
+      "total": 4,
+      "passed": 0,
+      "failed": 4,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "summary": "This manual VeriFlow test run against example.com completed in 18.2 seconds with all 4 tests failing. The suite validated core homepage functionality including page title content, heading display, and presence of the \"More information\" link. Every test failed: page title verification, heading text validation, link existence check, and the comprehensive end-to-end acceptance criteria test. This indicates significant issues with the target site's basic structure and content that require immediate investigation before the application can be considered functional or demo-ready.",
+    "targetHost": "example.com",
+    "story": "As a visitor, I can view the Example Domain homepage and find a link to more information."
+  },
+  {
+    "id": "2026-06-14T21:37:02.413Z",
+    "trigger": "manual",
+    "success": false,
+    "finishedAt": "2026-06-14T21:37:02.413Z",
+    "durationText": "21.1s",
+    "totals": {
+      "total": 4,
+      "passed": 0,
+      "failed": 4,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "summary": "This manual VeriFlow test run against example.com completed in 21.1 seconds with all 4 tests failing. The test suite validated core homepage elements including page title verification, heading text display, and presence of the \"More information\" link, plus an end-to-end acceptance criteria check. The failures indicate the target site either failed to load correctly or does not match the expected Example Domain structure, requiring investigation before this test suite can serve as a reliable validation checkpoint for the homepage user story.",
+    "targetHost": "example.com",
+    "story": "As a visitor, I can view the Example Domain homepage and find a link to more information."
+  },
+  {
     "id": "2026-04-12T08:09:46.910Z",
     "trigger": "manual",
     "success": true,
@@ -71,81 +156,6 @@
       "failed": 0
     },
     "summary": "This manual VeriFlow run against the-internet.herokuapp.com completed in 4.2 seconds but executed zero tests. The intended validation scope covered link navigation functionality: verifying that clickable links appear on the homepage, respond to user interaction, and successfully route to destination pages with visible content. While the test infrastructure ran successfully, no actual test cases were generated or executed, meaning the acceptance criteria for multi-page navigation flows remain unvalidated. This would require test regeneration to produce a meaningful quality assessment.",
-    "targetHost": "the-internet.herokuapp.com",
-    "story": "As a user, I want to click on links so that I can navigate between pages"
-  },
-  {
-    "id": "2026-04-12T08:08:22.167Z",
-    "trigger": "manual",
-    "success": true,
-    "finishedAt": "2026-04-12T08:08:22.167Z",
-    "durationText": "5.5s",
-    "totals": {
-      "total": 0,
-      "passed": 0,
-      "failed": 0
-    },
-    "summary": "This manual VeriFlow run against the form validation page at practice.expandtesting.com completed in 5.5 seconds but executed zero tests. The intended test suite was designed to validate user-facing error messaging, including verification that required fields display properly, empty field submissions trigger validation feedback, error messages persist after submission, and users can identify fields needing correction. While the test framework initialized successfully, no actual test cases were generated or run, so no pass or fail results are available for this session.",
-    "targetHost": "practice.expandtesting.com",
-    "story": "As a user, I want to see error messages so that I understand what went wrong"
-  },
-  {
-    "id": "2026-04-12T08:08:11.807Z",
-    "trigger": "manual",
-    "success": true,
-    "finishedAt": "2026-04-12T08:08:11.807Z",
-    "durationText": "2.4s",
-    "totals": {
-      "total": 0,
-      "passed": 0,
-      "failed": 0
-    },
-    "summary": "This manual VeriFlow run against python.org completed in 2.4 seconds but executed zero tests, meaning no validation actually occurred. The intended test scenario was to verify homepage navigation and core elements including the Python logo, primary navigation links, and main content visibility. While the run shows a success status, this reflects only that the test execution framework completed without errors, not that the python.org homepage functionality was validated. To demonstrate real capability, the test suite would need to be properly configured and executed.",
-    "targetHost": "python.org",
-    "story": "As a user, I want to navigate to the homepage so that I can see the main content"
-  },
-  {
-    "id": "2026-04-12T08:08:03.638Z",
-    "trigger": "manual",
-    "success": true,
-    "finishedAt": "2026-04-12T08:08:03.638Z",
-    "durationText": "3s",
-    "totals": {
-      "total": 0,
-      "passed": 0,
-      "failed": 0
-    },
-    "summary": "This manual VeriFlow run against wikipedia.org completed in 3 seconds but executed zero tests, meaning no validations were performed. The intended test scope was to verify search functionality including input field visibility, query entry, search submission via Enter or button, and results display. While the user story and acceptance criteria were defined for the search feature, no actual test cases were generated or run, so there are no pass/fail results to report for this execution.",
-    "targetHost": "wikipedia.org",
-    "story": "As a user, I want to search the site so that I can find information quickly"
-  },
-  {
-    "id": "2026-04-12T08:06:38.386Z",
-    "trigger": "manual",
-    "success": false,
-    "finishedAt": "2026-04-12T08:06:38.386Z",
-    "durationText": "0ms",
-    "totals": {
-      "total": 0,
-      "passed": 0,
-      "failed": 0
-    },
-    "summary": "This manual VeriFlow test run targeting the-internet.herokuapp.com failed to execute any tests, resulting in 0 passed and 0 failed tests in 0ms. The test suite was designed to validate user navigation functionality: verifying that visible links appear on the homepage, can be clicked, successfully navigate to destination pages, and display appropriate headings or main content. The run completed instantly without performing any actual validation checks, indicating a configuration or execution issue that prevented the test automation from launching.",
-    "targetHost": "the-internet.herokuapp.com",
-    "story": "As a user, I want to click on links so that I can navigate between pages"
-  },
-  {
-    "id": "2026-04-12T08:06:27.991Z",
-    "trigger": "manual",
-    "success": false,
-    "finishedAt": "2026-04-12T08:06:27.991Z",
-    "durationText": "0ms",
-    "totals": {
-      "total": 0,
-      "passed": 0,
-      "failed": 0
-    },
-    "summary": "This manual VeriFlow test run against the-internet.herokuapp.com completed in under 1ms but executed zero tests, resulting in a failed run. The intended test suite was designed to validate basic link navigation functionality: confirming that visible links appear on the homepage, that users can click those links, and that clicking navigates to destination pages with visible headings or main content. No actual validation occurred because the test generation or execution process did not produce any executable test cases.",
     "targetHost": "the-internet.herokuapp.com",
     "story": "As a user, I want to click on links so that I can navigate between pages"
   }

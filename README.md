@@ -13,7 +13,7 @@ It is built as a lightweight internal-tool style MVP focused on a practical work
 
 This diagram shows how VeriFlow moves from requirement input to AI-generated Playwright coverage, browser execution, and reviewable reporting outputs.
 
-![VeriFlow system architecture](docs/architecture.png)
+![VeriFlow system architecture](docs/architecture.webp)
 
 ## Why this project exists
 
@@ -195,23 +195,23 @@ npm run smoke:spec   # the self-contained Playwright smoke spec
 
 Test cases produced by Claude from a user story plus its acceptance criteria.
 
-![Generated test cases](docs/screenshots/01-test-cases.png)
+![Generated test cases](docs/screenshots/01-test-cases.webp)
 
 ### Playwright spec
 
 The runnable Playwright spec generated for the requirement.
 
-![Generated Playwright spec](docs/screenshots/02-playwright-spec.png)
+![Generated Playwright spec](docs/screenshots/02-playwright-spec.webp)
 
 ### Execution results + traceability
 
 Authoritative pass/fail totals, the sandbox mode, and a requirement → test traceability matrix.
 
-![Execution results](docs/screenshots/03-execution-results.png)
+![Execution results](docs/screenshots/03-execution-results.webp)
 
 ### Run history
 
-![Run history](docs/screenshots/04-run-history.png)
+![Run history](docs/screenshots/04-run-history.webp)
 
 ## Project structure
 
